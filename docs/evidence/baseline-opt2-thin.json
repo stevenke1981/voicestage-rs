@@ -1,0 +1,42 @@
+{
+  "profile": "release",
+  "exe_bytes": 1735680,
+  "method": "New process; WaitForInputIdle; memory after 1.5s; OS file cache NOT flushed; shared host",
+  "runs": [
+    {
+      "startup_ms": 169.56,
+      "working_set_bytes": 8364032,
+      "private_bytes": 1687552
+    },
+    {
+      "startup_ms": 161.4,
+      "working_set_bytes": 8364032,
+      "private_bytes": 1683456
+    },
+    {
+      "startup_ms": 159.17,
+      "working_set_bytes": 8380416,
+      "private_bytes": 1699840
+    },
+    {
+      "startup_ms": 159.79,
+      "working_set_bytes": 8368128,
+      "private_bytes": 1683456
+    },
+    {
+      "startup_ms": 161.31,
+      "working_set_bytes": 8396800,
+      "private_bytes": 1695744
+    }
+  ],
+  "core": {
+    "trials_us": [
+      81803,
+      80937,
+      81873,
+      80959,
+      78391
+    ],
+    "workload": "5 trials; each 200 parses/validations/serializations/UTF8 counts of 500 CJK dialogue lines"
+  }
+}

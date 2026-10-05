@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "First conversation / 初次對話 / はじめての対話",
+  "characters": [
+    { "id": "host", "name": "Host / 主持人 / 司会", "voice_id": "", "language": "zh-TW", "emotion": "neutral", "speed": 1.0 },
+    { "id": "guest", "name": "Guest / 來賓 / ゲスト", "voice_id": "", "language": "ja", "emotion": "happy", "speed": 1.0 }
+  ],
+  "segments": [
+    { "id": "example-001", "character_id": "host", "text": "你好！Welcome to VoiceStage." },
+    { "id": "example-002", "character_id": "guest", "text": "こんにちは！一起開始寫劇本吧。" }
+  ]
+}

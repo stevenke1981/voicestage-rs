@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "CJK native edit/save/open",
+    "TXT export/import",
+    "add/delete/reorder",
+    "mock batch",
+    "WAV mix/SRT",
+    "PlaySound preview",
+    "429 failure",
+    "manual retry",
+    "cancel queue",
+    "append draft without overwrite"
+  ],
+  "elapsed_ms": 2555,
+  "language": "ja",
+  "max_timer_gap_ms": 280,
+  "passed": true,
+  "ui_timer_ticks": 34
+}
