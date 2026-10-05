@@ -1,5 +1,7 @@
 # VoiceStage
 
+**Binary release on hold (2026-10-05):** Google Drive blocked download of the prepared portable ZIP with `cannotDownloadAbusiveFile` (malware/spam classification). No GitHub executable release attachment has been published. Local Defender found no threats, but that does not resolve Google's finding or establish a false positive. See [distribution status](docs/DISTRIBUTION_STATUS.md). Source and completed CI remain available; do not treat the prepared binary as cleared for distribution.
+
 A lightweight Rust desktop app for character dialogue scripts and Fish Audio S2.1 Pro speech. Windows 11 x64 first. 繁體中文 / English / 日本語 switch instantly inside the window.
 
 **v0.1.0 uses independently written client code. Real Fish/LLM requests have not been exercised for this release. Mock produces a short synthetic 440 Hz tone, never claimed to be Fish speech.** No model weights, Python, Electron, WebView or GPU runtime are bundled.
