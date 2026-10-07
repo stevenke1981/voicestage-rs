@@ -65,6 +65,30 @@ const PREVIEW: i32 = 145;
 const APPEND: i32 = 146;
 const STATUS: i32 = 150;
 
+// Display order matches the existing mode indices and model::EMOTIONS values.
+const MODE_LABELS: [[&str; 3]; 3] = [
+    [
+        "Mock / 本機測試音",
+        "Mock / local test tone",
+        "Mock / ローカルテスト音",
+    ],
+    ["s2.1-pro / 付費", "s2.1-pro / paid", "s2.1-pro / 有料"],
+    [
+        "s2.1-pro-free / 免費政策",
+        "s2.1-pro-free / free policy",
+        "s2.1-pro-free / 無料枠の方針",
+    ],
+];
+const EMOTION_LABELS: [[&str; 3]; 7] = [
+    ["自然", "Neutral", "自然"],
+    ["開心", "Happy", "喜び"],
+    ["悲傷", "Sad", "悲しみ"],
+    ["生氣", "Angry", "怒り"],
+    ["興奮", "Excited", "興奮"],
+    ["低語", "Whispering", "ささやき"],
+    ["平靜", "Calm", "穏やか"],
+];
+
 fn w(s: &str) -> Vec<u16> {
     s.encode_utf16().chain(Some(0)).collect()
 }
@@ -120,6 +144,33 @@ impl App {
             SendMessageW(h, CB_ADDSTRING, 0, w(item).as_ptr() as isize);
         }
         SendMessageW(h, CB_SETCURSEL, 0, 0);
+    }
+    unsafe fn localize_choices(&self) {
+        for (id, labels) in [
+            (MODE, MODE_LABELS.as_slice()),
+            (EMOTION, EMOTION_LABELS.as_slice()),
+        ] {
+            let selected = self.combo_index(id);
+            let items: Vec<_> = labels.iter().map(|t| t[self.lang]).collect();
+            self.combo_items(id, &items);
+            self.combo_set(id, selected);
+        }
+    }
+    unsafe fn update_draft_state(&self) {
+        if self.candidate.is_none() {
+            self.set(
+                PREVIEW,
+                self.tr([
+                    "尚無草稿。輸入提示並產生草稿，檢查後再附加至劇本。",
+                    "No draft yet. Enter a prompt, generate a draft, then review before appending.",
+                    "下書きはまだありません。指示を入力して生成し、確認後に台詞へ追加します。",
+                ]),
+            );
+        }
+        EnableWindow(
+            self.controls[&APPEND],
+            (self.candidate.is_some() && self.rx.is_none()) as i32,
+        );
     }
     unsafe fn status(&self, s: &str) {
         self.set(STATUS, s);
@@ -283,9 +334,9 @@ impl App {
         self.label(
             204,
             [
-                "角色與台詞 — 修改後按套用",
-                "Characters & lines — apply edits",
-                "登場人物と台詞 — 編集後に適用",
+                "01 劇本 — 編輯角色與台詞後套用",
+                "01 Script — apply character and line edits",
+                "01 台本 — 人物と台詞の編集を適用",
             ],
             16,
             145,
@@ -384,25 +435,15 @@ impl App {
         self.label(
             213,
             [
-                "語音生成（循序、併發 1）",
-                "Speech generation (sequential, concurrency 1)",
-                "音声生成（順次、同時実行 1）",
+                "02 配音 — 選擇模式，逐句生成",
+                "02 Speech — choose mode, generate in order",
+                "02 音声 — モードを選び、順番に生成",
             ],
             16,
             562,
             520,
         );
-        self.combo(
-            MODE,
-            &[
-                "Mock / synthetic tone",
-                "s2.1-pro / PAID",
-                "s2.1-pro-free / FREE policy",
-            ],
-            16,
-            589,
-            300,
-        );
+        self.combo(MODE, &MODE_LABELS.map(|t| t[self.lang]), 16, 589, 300);
         self.label(
             214,
             ["Fish 金鑰", "Fish API key", "Fish API キー"],
@@ -422,9 +463,9 @@ impl App {
         self.label(
             216,
             [
-                "USD / 百萬 UTF-8 bytes",
-                "USD / million UTF-8 bytes",
-                "USD / 100万 UTF-8 bytes",
+                "付費估價 USD / 百萬 bytes",
+                "Paid USD / million bytes",
+                "有料 USD / 100万 bytes",
             ],
             710,
             626,
@@ -460,9 +501,9 @@ impl App {
         self.label(
             217,
             [
-                "LLM 草稿 — 與語音生成分開；只有附加，不覆寫。",
-                "LLM draft — separate from speech; append only.",
-                "LLM 下書き — 音声生成と独立。追加のみ。",
+                "03 選用 LLM 草稿 — 先預覽，再附加；不覆寫劇本。",
+                "03 Optional LLM draft — review, then append; keeps existing lines.",
+                "03 任意の LLM 下書き — 確認後に追加。既存台詞は保持。",
             ],
             16,
             709,
@@ -537,6 +578,8 @@ impl App {
         if let Ok(model) = std::env::var("VOICESTAGE_LLM_MODEL") {
             self.set(MODEL, &model);
         }
+        self.localize_choices();
+        self.update_draft_state();
         self.refresh();
         self.status(self.tr([
             "就緒。先編輯劇本，再選 Mock 或 API。",
@@ -649,14 +692,56 @@ impl App {
         Ok(())
     }
     unsafe fn update_cost(&self) {
+        let mode = self.combo_index(MODE);
+        EnableWindow(self.controls[&PRICE], (mode == 1) as i32);
+        if mode != 1 {
+            self.set(
+                COST,
+                if mode == 0 {
+                    self.tr([
+                        "本機測試音 · 不呼叫 Fish API",
+                        "Local test tone · no Fish API request",
+                        "ローカルテスト音 · Fish API 通信なし",
+                    ])
+                } else {
+                    self.tr([
+                        "免費模式 · 請確認供應商政策；不估算費用",
+                        "Free mode · check provider policy; no estimate",
+                        "無料枠 · 提供元の方針を確認。料金試算なし",
+                    ])
+                },
+            );
+            return;
+        }
         let bytes = self.project.utf8_bytes();
-        let price = self.get(PRICE).parse::<f64>().unwrap_or(15.0);
+        let price = self
+            .get(PRICE)
+            .parse::<f64>()
+            .ok()
+            .filter(|p| p.is_finite() && *p >= 0.0);
+        let estimate = price.map(|p| bytes as f64 * p / 1_000_000.0);
+        let Some(total) = estimate.filter(|v| v.is_finite()) else {
+            self.set(
+                COST,
+                self.tr([
+                    "估價無效 · 請輸入有限的非負費率",
+                    "Invalid estimate · enter a finite, non-negative rate",
+                    "試算不可 · 有限の 0 以上の単価を入力",
+                ]),
+            );
+            return;
+        };
         self.set(
             COST,
             &format!(
-                "{} UTF-8 bytes • ≈ US${:.6} (paid estimate)",
+                "{} · {} UTF-8 bytes · ≈ US${:.6}",
+                self.tr([
+                    "已套用全文估價",
+                    "All applied lines estimate",
+                    "適用済み全行の試算",
+                ]),
                 bytes,
-                bytes as f64 * price / 1_000_000.0
+                total,
             ),
         );
     }
@@ -665,6 +750,7 @@ impl App {
             EnableWindow(self.controls[&id], (!busy) as i32);
         }
         EnableWindow(self.controls[&CANCEL], busy as i32);
+        self.update_draft_state();
     }
     unsafe fn generate(&mut self, all: bool) -> Result<(), String> {
         if self.rx.is_some() {
@@ -747,6 +833,8 @@ impl App {
                     self.selected = 0;
                     self.dirty = false;
                     self.audio.clear();
+                    self.candidate = None;
+                    self.update_draft_state();
                     self.refresh();
                 }
             }
@@ -763,6 +851,8 @@ impl App {
                     self.selected = 0;
                     self.dirty = false;
                     self.audio.clear();
+                    self.candidate = None;
+                    self.update_draft_state();
                     self.refresh();
                 }
             }
@@ -889,7 +979,7 @@ impl App {
                     d.append(&mut self.project)?;
                     self.candidate = None;
                     self.dirty = true;
-                    self.set(PREVIEW, "");
+                    self.update_draft_state();
                     self.refresh();
                 }
             }
@@ -1265,6 +1355,10 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
                 for (h, t) in &app.labels {
                     SetWindowTextW(*h, w(t[app.lang]).as_ptr());
                 }
+                app.localize_choices();
+                app.update_draft_state();
+                app.update_cost();
+            } else if id == MODE && notification == CBN_SELCHANGE {
                 app.update_cost();
             } else if id == SPEAKER && notification == CBN_SELCHANGE {
                 app.load_role();

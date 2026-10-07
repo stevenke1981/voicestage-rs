@@ -2,13 +2,15 @@
 
 **Binary release on hold (2026-10-05):** Google Drive blocked download of the prepared portable ZIP with `cannotDownloadAbusiveFile` (malware/spam classification). No GitHub executable release attachment has been published. Local Defender found no threats, but that does not resolve Google's finding or establish a false positive. See [distribution status](docs/DISTRIBUTION_STATUS.md). Source and completed CI remain available; do not treat the prepared binary as cleared for distribution.
 
+**Source-only workflow update (2026-10-07):** This revision improves three-language mode/emotion labels, mode-aware cost feedback and draft state handling. It has **not been compiled, tested dynamically or visually verified**. Current CI checks only source formatting and commit whitespace; a green run does not validate application behavior or clear the security finding. See the [design and pending QA checklist](docs/WORKFLOW_DESIGN.md). The original Drive ZIP was permanently deleted with the owner's approval; its review request was canceled without submission. Binary build, execution and distribution remain on hold.
+
 A lightweight Rust desktop app for character dialogue scripts and Fish Audio S2.1 Pro speech. Windows 11 x64 first. 繁體中文 / English / 日本語 switch instantly inside the window.
 
 **v0.1.0 uses independently written client code. Real Fish/LLM requests have not been exercised for this release. Mock produces a short synthetic 440 Hz tone, never claimed to be Fish speech.** No model weights, Python, Electron, WebView or GPU runtime are bundled.
 
 ## Start
 
-Download the portable ZIP from [Releases](https://github.com/stevenke1981/voicestage-rs/releases), extract it into a writable folder, and run `voicestage.exe`. No installer or administrator access required. The executable is unsigned. Preserve the included license notices.
+There is currently no approved executable download. The following describes the intended workflow after the security hold is resolved and execution is authorized; do not run the retained binary while the hold remains active.
 
 1. Start with the included two-character template. Select a line on the left; edit its text and apply it.
 2. Select a character, edit name, your authorized voice ID, language hint, emotion and speed (0.5–2.0), then apply the character. Language is an editorial hint; Fish detects the speech language from text. Emotion is sent as an S2 square-bracket prefix.
@@ -42,6 +44,8 @@ Paid estimate defaults to US$15 per million UTF-8 bytes and can be edited. It co
 - [Terms](https://fish.audio/terms/)
 
 ## Build and verify
+
+The commands below are retained for future validation after the security hold is resolved and execution is authorized. Do not run the build, clippy, test or executable commands during the hold. Only `cargo fmt --all --check` and source inspection are currently enabled in CI.
 
 Rust stable, Windows x64 toolchain (GNU or MSVC). `Cargo.lock` is committed. GNU builds need the standard Rust toolchain's linker. Limit jobs on shared workstations:
 

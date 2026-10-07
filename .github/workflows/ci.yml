@@ -1,19 +1,17 @@
-name: Rust quality
+name: Source checks (binary hold)
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  windows:
-    runs-on: windows-latest
+  source:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - run: cargo fmt --check
-      - run: cargo clippy --locked --all-targets -j 4 -- -D warnings
-      - run: cargo test --locked -j 4
-      - run: ./scripts/build.ps1
-      - run: python scripts/check_release.py
+      # The unresolved provider finding prohibits binary builds/execution/uploads.
+      # Use the runner's existing formatter; no dependency build or app execution.
+      - name: Check commit whitespace
+        run: git show --format= --check HEAD
+      - name: Check Rust source formatting only
+        run: cargo fmt --all --check
