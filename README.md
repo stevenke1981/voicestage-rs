@@ -1,3 +1,8 @@
+> [!WARNING]
+> **本專案已封存（唯讀），不再維護。** 後續開發請改至：**https://github.com/stevenke1981/fish-s2pro-tts**
+>
+> **This repository is archived (read-only) and no longer maintained.** Continued development: **https://github.com/stevenke1981/fish-s2pro-tts**
+
 # VoiceStage
 
 **Binary release on hold (2026-10-05):** Google Drive blocked download of the prepared portable ZIP with `cannotDownloadAbusiveFile` (malware/spam classification). No GitHub executable release attachment has been published. Local Defender found no threats, but that does not resolve Google's finding or establish a false positive. See [distribution status](docs/DISTRIBUTION_STATUS.md). Source and completed CI remain available; do not treat the prepared binary as cleared for distribution.
